@@ -5,13 +5,19 @@ class Store < ActiveRecord::Base
             length: {minimum: 3}
   validates :annual_revenue,
             numericality: true,
-            numericality: {greater_than: 0}
+            numericality: {greater_than_or_equal_to: 0}
 
+  before_destroy :store_destroy_check
 
+  private
+    def store_destroy_check
+      unless employees.empty?
+        errors.add(
+          :base,
+          message: "store has employees cannot delete"
+        )
+
+        throw(:abort)
+      end
+    end
 end
-
-=begin
-* Stores must always have a name that is a minimum of 3 characters
-  * Stores have an annual_revenue that is a number (integer) that must be 0 or more
-  * BONUS: Stores must carry at least one of the men's or women's apparel (hint: use a [custom validation method](http://guides.rubyonrails.org/active_record_validations.html#custom-methods) - **don't** use a `Validator` class)
-=end
